@@ -15,7 +15,6 @@ export class Socket extends EventEmitter {
             return this.connect({ port, host }, connectListener);
         }
         const [options, connectListener] = args;
-        console.log("Connect with", JSON.stringify(options));
         if (connectListener)
             this.once("connect", connectListener);
         this.cloudflareSocket = connect({
@@ -45,15 +44,10 @@ export class Socket extends EventEmitter {
     ;
     _read() {
         this.cloudflareSocketReader?.read().then((data) => {
-            console.log("reading data");
-            console.log(JSON.stringify(data));
             this._resetTimeout();
             if (!data.done) {
                 this.emit("data", data.value);
                 this._read();
-            }
-            else {
-                console.log("reader is done");
             }
         }).catch((error) => console.error(error));
     }
@@ -78,7 +72,6 @@ export class Socket extends EventEmitter {
     ;
     write(data, encoding = "utf8", callback) {
         this._resetTimeout();
-        console.log("write", JSON.stringify(data));
         this.cloudflareSocketWriter?.write(data).then(() => callback());
         return true;
     }
@@ -100,7 +93,6 @@ export class Socket extends EventEmitter {
         }
         if (this.timeout.duration && this.timeout.duration > 0) {
             this.timeoutId = setTimeout(() => {
-                console.log("wants to timeout");
                 this.timeout.callback?.();
                 this.emit("timeout");
             }, this.timeout.duration);

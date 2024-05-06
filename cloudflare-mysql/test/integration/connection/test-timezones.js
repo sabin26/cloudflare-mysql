@@ -106,12 +106,6 @@ function testNextDate(connection) {
       assert.ifError(err);
       assert.equal(rows.length, 1);
       if (dt.getTime() !== rows[0].dt.getTime() || expected_date_string !== rows_raw[0].dt) {
-        console.log('Failure while testing date: ' + day + ', Timezone: ' + timezone);
-        console.log('Pre-statement: ' + pre_statements[pre_idx]);
-        console.log('Expected raw string: ' + expected_date_string);
-        console.log('Received raw string: ' + rows_raw[0].dt);
-        console.log('Expected date object: ' + dt.toISOString() + ' (' + dt.getTime() + ', ' + dt.toLocaleString() + ')');
-        console.log('Received date object: ' + rows[0].dt.toISOString() + ' (' + rows[0].dt.getTime() + ', ' + rows[0].dt.toLocaleString() + ')');
         assert.strictEqual(expected_date_string, rows_raw[0].dt);
         assert.strictEqual(dt.toISOString(), rows[0].dt.toISOString());
       }

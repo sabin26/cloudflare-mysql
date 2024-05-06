@@ -55,8 +55,6 @@ expectedToc.forEach(function (expectedLine) {
 });
 
 function expect (lineidx, message, line) {
-  console.log('Expected %s on line %d', message, (lineidx + 1));
-  console.log('  Got: %s', line);
   process.exitCode = 1;
 }
 

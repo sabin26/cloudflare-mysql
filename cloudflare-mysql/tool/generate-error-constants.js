@@ -46,8 +46,6 @@ for (var i = 0; i < codes.length; i++) {
   }
 }
 
-console.log('Wrote constants to ' + targetFile);
-
 function appendGlobalErrorCodes(srcDir, codes) {
   var headerFile = path.join(srcDir, 'include', 'mysys_err.h');
   var code       = '';

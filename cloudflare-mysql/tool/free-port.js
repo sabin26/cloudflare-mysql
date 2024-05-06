@@ -35,7 +35,6 @@ function run() {
 
     check(port, function (used) {
       if (used === false) {
-        console.log('%d', port);
         process.exit(0);
       } else {
         setTimeout(next, 0);

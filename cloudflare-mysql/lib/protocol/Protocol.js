@@ -457,7 +457,5 @@ export default class Protocol extends Stream {
     }
 
     var packetPayload = String(packet).replace(/^[^{]+/, '');
-
-    console.log('%s%s %s %s\n', direction, threadId, packetName, packetPayload);
   };
 };

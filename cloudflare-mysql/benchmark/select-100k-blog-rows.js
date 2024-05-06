@@ -29,11 +29,6 @@ function selectRows() {
       return;
     }
 
-    var duration = (Date.now() - firstSelect) / 1000;
-    var hz = Math.round(rowCount / duration);
-
-    console.log(hz);
-
     rowCount    = 0;
     firstSelect = null;
 

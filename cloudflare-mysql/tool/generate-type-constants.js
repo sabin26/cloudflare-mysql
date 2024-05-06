@@ -40,8 +40,6 @@ for (var i = 0; i < types.length; i++) {
   }
 }
 
-console.log('Wrote constants to ' + targetFile);
-
 function extractMySqlVersion(srcDir) {
   var versionFile = path.join(srcDir, 'VERSION');
   var contents    = fs.readFileSync(versionFile, 'utf-8');

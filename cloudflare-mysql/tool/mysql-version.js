@@ -9,7 +9,6 @@ function run() {
     conn.destroy();
 
     try {
-      console.log(conn._protocol._handshakeInitializationPacket.serverVersion);
       process.exit(0);
     } catch (e) {
       console.error('unable to get mysql version');

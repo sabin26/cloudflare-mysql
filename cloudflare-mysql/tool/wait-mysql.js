@@ -32,7 +32,6 @@ function run() {
   function next() {
     check(host, port, function (connected) {
       if (connected) {
-        console.log('connected to %s:%d', host, port);
         process.exit(0);
       } else {
         setTimeout(next, CHECK_INTERVAL_MS);
