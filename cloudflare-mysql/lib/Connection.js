@@ -4,8 +4,8 @@ import Protocol from "./protocol/Protocol";
 import SqlString from "./protocol/SqlString";
 import Query from "./protocol/sequences/Query";
 
-import Net from "cloudflare-net-polyfill";
-import { EventEmitter } from "cloudflare-stream-polyfill";
+import Net from "./../../cloudflare-net-polyfill";
+import { EventEmitter } from "./../../cloudflare-stream-polyfill";
 
 export default class Connection extends EventEmitter {
   constructor(options) {

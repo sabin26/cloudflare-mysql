@@ -1,6 +1,6 @@
 import { connect } from 'cloudflare:sockets';
 ;
-import { EventEmitter } from "cloudflare-stream-polyfill";
+import { EventEmitter } from "./../../cloudflare-stream-polyfill";
 export class Socket extends EventEmitter {
     constructor(options = {}) {
         super();
@@ -49,24 +49,26 @@ export class Socket extends EventEmitter {
                 this.emit("data", data.value);
                 this._read();
             }
+            else {
+            }
         }).catch((error) => console.error(error));
     }
     ;
     pause() {
-        console.info("Pause does nothing.");
+        //console.info("Pause does nothing.");
     }
     ;
     resume() {
-        console.info("Resume does nothing.");
+        //console.info("Resume does nothing.");
     }
     ;
     end() {
-        console.debug("end");
+        //console.debug("end");
         this.cloudflareSocket?.close();
     }
     ;
     destroy() {
-        console.debug("destroy");
+        //console.debug("destroy");
         this.cloudflareSocket?.close();
     }
     ;
@@ -77,7 +79,7 @@ export class Socket extends EventEmitter {
     }
     ;
     setTimeout(timeout, callback) {
-        console.debug("setTimeout", JSON.stringify({ timeout }));
+        //console.debug("setTimeout", JSON.stringify({ timeout }));
         this.timeout = {
             duration: timeout,
             callback

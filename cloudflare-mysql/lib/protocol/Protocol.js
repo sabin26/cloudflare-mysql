@@ -3,7 +3,7 @@ import Sequences from "./sequences";
 import Packets from "./packets";
 import PacketWriter from "./PacketWriter";
 
-import Stream from "cloudflare-stream-polyfill";
+import Stream from "./../../../cloudflare-stream-polyfill";
 
 export default class Protocol extends Stream {
   constructor (options) {

@@ -1,4 +1,4 @@
-import { EventEmitter } from 'cloudflare-stream-polyfill';
+import { EventEmitter } from './../../cloudflare-stream-polyfill';
 
 var mysql          = require('../');
 var Connection     = require('./Connection');
@@ -16,7 +16,7 @@ export default class Pool extends EventEmitter {
     this._freeConnections      = [];
     this._connectionQueue      = [];
     this._closed               = false;
-  }; 
+  };
 
   getConnection (cb) {
     if (this._closed) {
