@@ -19,6 +19,7 @@
     "sqlstring": "2.3.3"
   },
   "devDependencies": {
+    "@babel/eslint-parser": "^7.24.8",
     "@cloudflare/workers-types": "^4.20240725.0",
     "after": "0.8.2",
     "eslint": "9.7.0",
