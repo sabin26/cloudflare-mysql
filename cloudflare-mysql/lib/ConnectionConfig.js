@@ -1,4 +1,3 @@
-import { parse as urlParse } from 'node:url';
 import ClientConstants from './protocol/constants/client';
 import Charsets, { UTF8_GENERAL_CI } from './protocol/constants/charsets';
 var SSLProfiles     = null;
@@ -172,23 +171,19 @@ class ConnectionConfig {
     return allFlags;
   }
   static parseUrl(url) {
-    url = urlParse(url, true);
+    url = new URL(url);
 
     var options = {
       host: url.hostname,
       port: url.port,
-      database: url.pathname.substr(1)
+      database: url.pathname.substr(1),
+      user: url.username,
+      password: url.password,
     };
 
-    if (url.auth) {
-      var auth = url.auth.split(':');
-      options.user = auth.shift();
-      options.password = auth.join(':');
-    }
-
-    if (url.query) {
-      for (var key in url.query) {
-        var value = url.query[key];
+    if (url.searchParams) {
+      for (var key in url.searchParams) {
+        var value = url.searchParams[key];
 
         try {
           // Try to parse this as a JSON expression first
@@ -203,9 +198,3 @@ class ConnectionConfig {
     return options;
   }
 }
-
-
-
-
-
-
