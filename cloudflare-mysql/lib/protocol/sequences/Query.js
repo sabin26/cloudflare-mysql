@@ -1,5 +1,4 @@
 import { CLIENT_LOCAL_FILES } from '../constants/client';
-import { createReadStream } from 'node:fs';
 import { ComQueryPacket, OkPacket, LocalInfileRequestPacket, ErrorPacket, ResultSetHeaderPacket, FieldPacket, EofPacket, RowDataPacket, EmptyPacket, LocalDataFilePacket } from '../packets';
 import ResultSet from '../ResultSet';
 import Sequence from './Sequence';
@@ -88,7 +87,7 @@ class Query extends Sequence {
   }
   LocalInfileRequestPacket(packet) {
     if (this._connection.config.clientFlags & CLIENT_LOCAL_FILES) {
-      this._sendLocalDataFile(packet.filename);
+      //this._sendLocalDataFile(packet.filename);
     } else {
       this._loadError = new Error('Load local files command is disabled');
       this._loadError.code = 'LOCAL_FILES_DISABLED';
@@ -147,35 +146,35 @@ class Query extends Sequence {
       this.emit('result', packet, this._index);
     }
   }
-  _sendLocalDataFile(path) {
-    var self = this;
-    var localStream = createReadStream(path, {
-      flag: 'r',
-      encoding: null,
-      autoClose: true
-    });
+  // _sendLocalDataFile(path) {
+  //   var self = this;
+  //   var localStream = createReadStream(path, {
+  //     flag: 'r',
+  //     encoding: null,
+  //     autoClose: true
+  //   });
 
-    this.on('pause', function () {
-      localStream.pause();
-    });
+  //   this.on('pause', function () {
+  //     localStream.pause();
+  //   });
 
-    this.on('resume', function () {
-      localStream.resume();
-    });
+  //   this.on('resume', function () {
+  //     localStream.resume();
+  //   });
 
-    localStream.on('data', function (data) {
-      self.emit('packet', new LocalDataFilePacket(data));
-    });
+  //   localStream.on('data', function (data) {
+  //     self.emit('packet', new LocalDataFilePacket(data));
+  //   });
 
-    localStream.on('error', function (err) {
-      self._loadError = err;
-      localStream.emit('end');
-    });
+  //   localStream.on('error', function (err) {
+  //     self._loadError = err;
+  //     localStream.emit('end');
+  //   });
 
-    localStream.on('end', function () {
-      self.emit('packet', new EmptyPacket());
-    });
-  }
+  //   localStream.on('end', function () {
+  //     self.emit('packet', new EmptyPacket());
+  //   });
+  // }
   stream(options) {
     var self = this;
 
