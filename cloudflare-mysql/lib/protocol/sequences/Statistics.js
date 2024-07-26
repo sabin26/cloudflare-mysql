@@ -1,30 +1,31 @@
 import Sequence from './Sequence';
-import { inherits } from 'node:util';
 import { ComStatisticsPacket, StatisticsPacket } from '../packets';
 
 export default Statistics;
-inherits(Statistics, Sequence);
-function Statistics(options, callback) {
-  if (!callback && typeof options === 'function') {
-    callback = options;
-    options = {};
-  }
+class Statistics extends Sequence {
+  constructor(options, callback) {
+    if (!callback && typeof options === 'function') {
+      callback = options;
+      options = {};
+    }
 
-  Sequence.call(this, options, callback);
+    Sequence.call(this, options, callback);
+  }
+  start() {
+    this.emit('packet', new ComStatisticsPacket());
+  }
+  StatisticsPacket(packet) {
+    this.end(null, packet);
+  }
+  determinePacket(firstByte) {
+    if (firstByte === 0x55) {
+      return StatisticsPacket;
+    }
+
+    return undefined;
+  }
 }
 
-Statistics.prototype.start = function() {
-  this.emit('packet', new ComStatisticsPacket());
-};
 
-Statistics.prototype['StatisticsPacket'] = function (packet) {
-  this.end(null, packet);
-};
 
-Statistics.prototype.determinePacket = function determinePacket(firstByte) {
-  if (firstByte === 0x55) {
-    return StatisticsPacket;
-  }
 
-  return undefined;
-};

@@ -2,16 +2,14 @@ import { CLIENT_LOCAL_FILES } from '../constants/client';
 import { createReadStream } from 'node:fs';
 import { ComQueryPacket, OkPacket, LocalInfileRequestPacket, ErrorPacket, ResultSetHeaderPacket, FieldPacket, EofPacket, RowDataPacket, EmptyPacket, LocalDataFilePacket } from '../packets';
 import ResultSet from '../ResultSet';
-import Sequence, { call } from './Sequence';
+import Sequence from './Sequence';
 import { SERVER_MORE_RESULTS_EXISTS } from '../constants/server_status';
 import Readable from 'readable-stream';
-import { inherits } from 'node:util';
 
 export default Query;
-inherits(Query, Sequence);
-class Query {
+class Query extends Sequence {
   constructor(options, callback) {
-    call(this, options, callback);
+    super(options, callback);
 
     this.sql = options.sql;
     this.values = options.values;

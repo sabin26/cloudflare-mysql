@@ -1,5 +1,5 @@
 import Parser from "./Parser";
-import Sequences from "./sequences";
+import * as Sequences from "./sequences";
 import Packets from "./packets";
 import PacketWriter from "./PacketWriter";
 
