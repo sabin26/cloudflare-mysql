@@ -1,13 +1,13 @@
-var Sequence        = require('./Sequence');
-var Util            = require('util');
-var Packets         = require('../packets');
-var Auth            = require('../Auth');
-var ClientConstants = require('../constants/client');
+import Sequence, { call } from './Sequence';
+import { inherits } from 'node:util';
+import { ErrorPacket, HandshakeInitializationPacket, UseOldPasswordPacket, AuthSwitchRequestPacket, AuthSwitchResponsePacket, SSLRequestPacket, ClientAuthenticationPacket, OldPasswordPacket } from '../packets';
+import { auth, token, scramble323 } from '../Auth';
+import { CLIENT_SSL } from '../constants/client';
 
-module.exports = Handshake;
-Util.inherits(Handshake, Sequence);
+export default Handshake;
+inherits(Handshake, Sequence);
 function Handshake(options, callback) {
-  Sequence.call(this, options, callback);
+  call(this, options, callback);
 
   options = options || {};
 
@@ -17,17 +17,17 @@ function Handshake(options, callback) {
 
 Handshake.prototype.determinePacket = function determinePacket(firstByte, parser) {
   if (firstByte === 0xff) {
-    return Packets.ErrorPacket;
+    return ErrorPacket;
   }
 
   if (!this._handshakeInitializationPacket) {
-    return Packets.HandshakeInitializationPacket;
+    return HandshakeInitializationPacket;
   }
 
   if (firstByte === 0xfe) {
     return (parser.packetLength() === 1)
-      ? Packets.UseOldPasswordPacket
-      : Packets.AuthSwitchRequestPacket;
+      ? UseOldPasswordPacket
+      : AuthSwitchRequestPacket;
   }
 
   return undefined;
@@ -35,11 +35,11 @@ Handshake.prototype.determinePacket = function determinePacket(firstByte, parser
 
 Handshake.prototype['AuthSwitchRequestPacket'] = function (packet) {
   var name = packet.authMethodName;
-  Auth.auth(name, packet.authMethodData, {
+  auth(name, packet.authMethodData, {
     password: this._config.password
   }).then((data) => {
     if (data !== undefined) {
-      this.emit('packet', new Packets.AuthSwitchResponsePacket({
+      this.emit('packet', new AuthSwitchResponsePacket({
         data: data
       }));
     } else {
@@ -56,7 +56,7 @@ Handshake.prototype['HandshakeInitializationPacket'] = function(packet) {
 
   this._config.protocol41 = packet.protocol41;
 
-  var serverSSLSupport = packet.serverCapabilities1 & ClientConstants.CLIENT_SSL;
+  var serverSSLSupport = packet.serverCapabilities1 & CLIENT_SSL;
 
   if (this._config.ssl) {
     if (!serverSSLSupport) {
@@ -69,8 +69,8 @@ Handshake.prototype['HandshakeInitializationPacket'] = function(packet) {
       return;
     }
 
-    this._config.clientFlags |= ClientConstants.CLIENT_SSL;
-    this.emit('packet', new Packets.SSLRequestPacket({
+    this._config.clientFlags |= CLIENT_SSL;
+    this.emit('packet', new SSLRequestPacket({
       clientFlags   : this._config.clientFlags,
       maxPacketSize : this._config.maxPacketSize,
       charsetNumber : this._config.charsetNumber
@@ -89,8 +89,8 @@ Handshake.prototype._sendCredentials = function() {
   var packet = this._handshakeInitializationPacket;
 
   if(packet.protocol41) {
-    Auth.token(this._config.password, packet.scrambleBuff()).then((scrambleBuffer) => {
-      this.emit('packet', new Packets.ClientAuthenticationPacket({
+    token(this._config.password, packet.scrambleBuff()).then((scrambleBuffer) => {
+      this.emit('packet', new ClientAuthenticationPacket({
         clientFlags   : this._config.clientFlags,
         maxPacketSize : this._config.maxPacketSize,
         charsetNumber : this._config.charsetNumber,
@@ -102,14 +102,14 @@ Handshake.prototype._sendCredentials = function() {
     });
   }
   else {
-    this.emit('packet', new Packets.ClientAuthenticationPacket({
+    this.emit('packet', new ClientAuthenticationPacket({
       clientFlags   : this._config.clientFlags,
       maxPacketSize : this._config.maxPacketSize,
       charsetNumber : this._config.charsetNumber,
       user          : this._config.user,
       database      : this._config.database,
       protocol41    : packet.protocol41,
-      scrambleBuff  : Auth.scramble323(packet.scrambleBuff(), this._config.password)
+      scrambleBuff  : scramble323(packet.scrambleBuff(), this._config.password)
     }));
   }
 };
@@ -128,8 +128,8 @@ Handshake.prototype['UseOldPasswordPacket'] = function() {
     return;
   }
 
-  this.emit('packet', new Packets.OldPasswordPacket({
-    scrambleBuff: Auth.scramble323(this._handshakeInitializationPacket.scrambleBuff(), this._config.password)
+  this.emit('packet', new OldPasswordPacket({
+    scrambleBuff: scramble323(this._handshakeInitializationPacket.scrambleBuff(), this._config.password)
   }));
 };
 

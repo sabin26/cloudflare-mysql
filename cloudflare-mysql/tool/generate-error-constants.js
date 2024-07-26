@@ -1,7 +1,7 @@
 #!/usr/bin/env node
-var fs     = require('fs');
-var path   = require('path');
-var script = path.basename(__filename);
+import { existsSync, createWriteStream, readFileSync } from 'node:fs';
+import { basename, join } from 'path';
+var script = basename(__filename);
 
 var srcDir = process.argv[2];
 if (!srcDir) {
@@ -12,15 +12,15 @@ if (!srcDir) {
   args[1] = process.argv[1].indexOf(' ') !== -1
     ? '"' + process.argv[1] + '"'
     : process.argv[1];
-  args[2] = path.join('path', 'to', 'mysql', 'src');
+  args[2] = join('path', 'to', 'mysql', 'src');
   console.error('Usage: ' + args.join(' '));
   process.exit(1);
 }
 
 var codes      = [];
-var targetFile = path.join(__dirname, '..', 'lib', 'protocol', 'constants', 'errors.js');
-var previous   = fs.existsSync(targetFile) ? require(targetFile) : {};
-var stream     = fs.createWriteStream(targetFile);
+var targetFile = join(__dirname, '..', 'lib', 'protocol', 'constants', 'errors.js');
+var previous   = existsSync(targetFile) ? require(targetFile) : {};
+var stream     = createWriteStream(targetFile);
 var version    = extractMySqlVersion(srcDir);
 
 appendGlobalErrorCodes(srcDir, codes);
@@ -47,9 +47,9 @@ for (var i = 0; i < codes.length; i++) {
 }
 
 function appendGlobalErrorCodes(srcDir, codes) {
-  var headerFile = path.join(srcDir, 'include', 'mysys_err.h');
+  var headerFile = join(srcDir, 'include', 'mysys_err.h');
   var code       = '';
-  var contents   = fs.readFileSync(headerFile, 'ascii');
+  var contents   = readFileSync(headerFile, 'ascii');
   var block      = false;
   var match      = null;
   var num        = 0;
@@ -75,9 +75,9 @@ function appendGlobalErrorCodes(srcDir, codes) {
 }
 
 function appendDatabseErrorCodes(srcDir, codes) {
-  var headerFile = path.join(srcDir, 'include', 'my_base.h');
+  var headerFile = join(srcDir, 'include', 'my_base.h');
   var code       = '';
-  var contents   = fs.readFileSync(headerFile, 'ascii');
+  var contents   = readFileSync(headerFile, 'ascii');
   var block      = false;
   var match      = null;
   var num        = 0;
@@ -103,8 +103,8 @@ function appendDatabseErrorCodes(srcDir, codes) {
 }
 
 function appendSqlErrorCodes(srcDir, codes) {
-  var errorFile = path.join(srcDir, 'sql', 'share', 'errmsg-utf8.txt');
-  var contents  = fs.readFileSync(errorFile, 'utf-8');
+  var errorFile = join(srcDir, 'sql', 'share', 'errmsg-utf8.txt');
+  var contents  = readFileSync(errorFile, 'utf-8');
   var sections  = contents.split(/^start-error-number (\d+)$/m);
 
   for (var i = 1; i < sections.length; i += 2) {
@@ -120,8 +120,8 @@ function appendSqlErrorCodes(srcDir, codes) {
 }
 
 function extractMySqlVersion(srcDir) {
-  var versionFile = path.join(srcDir, 'VERSION');
-  var contents    = fs.readFileSync(versionFile, 'utf-8');
+  var versionFile = join(srcDir, 'VERSION');
+  var contents    = readFileSync(versionFile, 'utf-8');
   var dictionary  = Object.create(null);
 
   contents.split('\n').forEach(function (line) {

@@ -1,37 +1,37 @@
-var assert = require('assert');
-var common = require('../../common');
-var util   = require('util');
+import { ifError, equal, deepEqual } from 'assert';
+import { createFakeServer, createPool } from '../../common';
+import { format } from 'node:util';
 
 var tid    = 0;
-var server = common.createFakeServer();
+var server = createFakeServer();
 
 server.listen(0, function (err) {
-  assert.ifError(err);
+  ifError(err);
 
   var messages = [];
-  var pool     = common.createPool({debug: true, port: server.port()});
+  var pool     = createPool({debug: true, port: server.port()});
 
   console.log = function () {
-    var msg = util.format.apply(this, arguments);
+    var msg = format.apply(this, arguments);
     if (String(msg).indexOf('--') !== -1) {
       messages.push(msg.split(' {')[0]);
     }
   };
 
   pool.getConnection(function (err, conn1) {
-    assert.ifError(err);
+    ifError(err);
     conn1.query('SELECT 1', function (err) {
-      assert.ifError(err);
+      ifError(err);
       pool.getConnection(function (err, conn2) {
-        assert.ifError(err);
+        ifError(err);
         conn2.query('SELECT 1', function (err) {
-          assert.ifError(err);
+          ifError(err);
           conn1.release();
           conn2.release();
           pool.end(function (err) {
-            assert.ifError(err);
-            assert.equal(messages.length, 20);
-            assert.deepEqual(messages, [
+            ifError(err);
+            equal(messages.length, 20);
+            deepEqual(messages, [
               '<-- HandshakeInitializationPacket',
               '--> (1) ClientAuthenticationPacket',
               '<-- (1) OkPacket',

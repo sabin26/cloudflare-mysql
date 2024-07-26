@@ -1,4 +1,3 @@
-import Crypto from "crypto";
 import ConnectionConfig from "./ConnectionConfig";
 import Protocol from "./protocol/Protocol";
 import SqlString from "./protocol/SqlString";

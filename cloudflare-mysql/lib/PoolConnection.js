@@ -1,6 +1,5 @@
 import Connection from './Connection';
 
-var inherits   = require('util').inherits;
 var Events     = require('events');
 
 export default class PoolConnection extends Connection {

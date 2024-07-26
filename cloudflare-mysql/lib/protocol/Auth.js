@@ -1,17 +1,15 @@
-var Crypto = require('crypto');
-var Auth   = exports;
-
 async function auth(name, data, options) {
   options = options || {};
 
   switch (name) {
     case 'mysql_native_password':
-      return await Auth.token(options.password, data.slice(0, 20));
+      return await token(options.password, data.slice(0, 20));
     default:
       return undefined;
   }
 }
-Auth.auth = auth;
+const _auth = auth;
+export { _auth as auth };
 
 async function sha1(msg) {
   const hashBuffer = await crypto.subtle.digest('SHA-1', Buffer.from(msg, "binary"));
@@ -20,7 +18,8 @@ async function sha1(msg) {
 
   return hashBinary;
 }
-Auth.sha1 = sha1;
+const _sha1 = sha1;
+export { _sha1 as sha1 };
 
 function xor(a, b) {
   a = Buffer.from(a, 'binary');
@@ -31,9 +30,10 @@ function xor(a, b) {
   }
   return result;
 }
-Auth.xor = xor;
+const _xor = xor;
+export { _xor as xor };
 
-Auth.token = async function(password, scramble) {
+export async function token(password, scramble) {
   if (!password) {
     return Buffer.alloc(0);
   }
@@ -46,11 +46,11 @@ Auth.token = async function(password, scramble) {
   var stage3 = await sha1(scramble.toString("binary") + stage2);
  
   return xor(stage3, stage1);
-};
+}
 
 // This is a port of sql/password.c:hash_password which needs to be used for
 // pre-4.1 passwords.
-Auth.hashPassword = function(password) {
+export function hashPassword(password) {
   var nr     = [0x5030, 0x5735];
   var add    = 7;
   var nr2    = [0x1234, 0x5671];
@@ -83,25 +83,25 @@ Auth.hashPassword = function(password) {
   this.int31Write(result, nr2, 4);
 
   return result;
-};
+}
 
-Auth.randomInit = function(seed1, seed2) {
+export function randomInit(seed1, seed2) {
   return {
     max_value     : 0x3FFFFFFF,
     max_value_dbl : 0x3FFFFFFF,
     seed1         : seed1 % 0x3FFFFFFF,
     seed2         : seed2 % 0x3FFFFFFF
   };
-};
+}
 
-Auth.myRnd = function(r){
+export function myRnd(r){
   r.seed1 = (r.seed1 * 3 + r.seed2) % r.max_value;
   r.seed2 = (r.seed1 + r.seed2 + 33) % r.max_value;
 
   return r.seed1 / r.max_value_dbl;
-};
+}
 
-Auth.scramble323 = function(message, password) {
+export function scramble323(message, password) {
   if (!password) {
     return Buffer.alloc(0);
   }
@@ -123,50 +123,50 @@ Auth.scramble323 = function(message, password) {
   }
 
   return to;
-};
+}
 
-Auth.xor32 = function(a, b){
+export function xor32(a, b){
   return [a[0] ^ b[0], a[1] ^ b[1]];
-};
+}
 
-Auth.add32 = function(a, b){
+export function add32(a, b){
   var w1 = a[1] + b[1];
   var w2 = a[0] + b[0] + ((w1 & 0xFFFF0000) >> 16);
 
   return [w2 & 0xFFFF, w1 & 0xFFFF];
-};
+}
 
-Auth.mul32 = function(a, b){
+export function mul32(a, b){
   // based on this example of multiplying 32b ints using 16b
   // http://www.dsprelated.com/showmessage/89790/1.php
   var w1 = a[1] * b[1];
   var w2 = (((a[1] * b[1]) >> 16) & 0xFFFF) + ((a[0] * b[1]) & 0xFFFF) + (a[1] * b[0] & 0xFFFF);
 
   return [w2 & 0xFFFF, w1 & 0xFFFF];
-};
+}
 
-Auth.and32 = function(a, b){
+export function and32(a, b){
   return [a[0] & b[0], a[1] & b[1]];
-};
+}
 
-Auth.shl32 = function(a, b){
+export function shl32(a, b){
   // assume b is 16 or less
   var w1 = a[1] << b;
   var w2 = (a[0] << b) | ((w1 & 0xFFFF0000) >> 16);
 
   return [w2 & 0xFFFF, w1 & 0xFFFF];
-};
+}
 
-Auth.int31Write = function(buffer, number, offset) {
+export function int31Write(buffer, number, offset) {
   buffer[offset] = (number[0] >> 8) & 0x7F;
   buffer[offset + 1] = (number[0]) & 0xFF;
   buffer[offset + 2] = (number[1] >> 8) & 0xFF;
   buffer[offset + 3] = (number[1]) & 0xFF;
-};
+}
 
-Auth.int32Read = function(buffer, offset){
+export function int32Read(buffer, offset){
   return (buffer[offset] << 24)
        + (buffer[offset + 1] << 16)
        + (buffer[offset + 2] << 8)
        + (buffer[offset + 3]);
-};
+}

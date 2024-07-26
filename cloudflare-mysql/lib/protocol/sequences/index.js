@@ -1,7 +1,7 @@
-exports.ChangeUser = require('./ChangeUser');
-exports.Handshake = require('./Handshake');
-exports.Ping = require('./Ping');
-exports.Query = require('./Query');
-exports.Quit = require('./Quit');
-exports.Sequence = require('./Sequence');
-exports.Statistics = require('./Statistics');
+export const ChangeUser = require('./ChangeUser').default;
+export const Handshake = require('./Handshake').default;
+export const Ping = require('./Ping').default;
+export const Query = require('./Query').default;
+export const Quit = require('./Quit').default;
+export const Sequence = require('./Sequence').default;
+export const Statistics = require('./Statistics').default;

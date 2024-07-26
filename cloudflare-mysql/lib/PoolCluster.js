@@ -1,11 +1,11 @@
-var Pool          = require('./Pool');
-var PoolConfig    = require('./PoolConfig');
-var PoolNamespace = require('./PoolNamespace');
-var PoolSelector  = require('./PoolSelector');
-var Util          = require('util');
-var EventEmitter  = require('events').EventEmitter;
+import Pool from './Pool';
+import PoolConfig from './PoolConfig';
+import PoolNamespace from './PoolNamespace';
+import PoolSelector from './PoolSelector';
+import { inherits } from 'node:util';
+import { EventEmitter } from 'events';
 
-module.exports = PoolCluster;
+export default PoolCluster;
 
 /**
  * PoolCluster
@@ -29,7 +29,7 @@ function PoolCluster(config) {
   this._nodes = Object.create(null);
 }
 
-Util.inherits(PoolCluster, EventEmitter);
+inherits(PoolCluster, EventEmitter);
 
 PoolCluster.prototype.add = function add(id, config) {
   if (this._closed) {

@@ -1,9 +1,9 @@
-var Sequence = require('./Sequence');
-var Util     = require('util');
-var Packets  = require('../packets');
+import Sequence from './Sequence';
+import { inherits } from 'node:util';
+import { ComStatisticsPacket, StatisticsPacket } from '../packets';
 
-module.exports = Statistics;
-Util.inherits(Statistics, Sequence);
+export default Statistics;
+inherits(Statistics, Sequence);
 function Statistics(options, callback) {
   if (!callback && typeof options === 'function') {
     callback = options;
@@ -14,7 +14,7 @@ function Statistics(options, callback) {
 }
 
 Statistics.prototype.start = function() {
-  this.emit('packet', new Packets.ComStatisticsPacket());
+  this.emit('packet', new ComStatisticsPacket());
 };
 
 Statistics.prototype['StatisticsPacket'] = function (packet) {
@@ -23,7 +23,7 @@ Statistics.prototype['StatisticsPacket'] = function (packet) {
 
 Statistics.prototype.determinePacket = function determinePacket(firstByte) {
   if (firstByte === 0x55) {
-    return Packets.StatisticsPacket;
+    return StatisticsPacket;
   }
 
   return undefined;

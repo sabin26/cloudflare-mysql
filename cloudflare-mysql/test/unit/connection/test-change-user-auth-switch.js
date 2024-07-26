@@ -1,25 +1,25 @@
-var assert = require('assert');
-var Crypto = require('crypto');
-var common = require('../../common');
+import { ifError, strictEqual } from 'assert';
+
+import { createFakeServer, createConnection, Auth } from '../../common';
 
 var random = Crypto.pseudoRandomBytes || Crypto.randomBytes; // Depends on node.js version
-var server = common.createFakeServer();
+var server = createFakeServer();
 
 server.listen(0, function(err) {
-  assert.ifError(err);
+  ifError(err);
 
-  var connection = common.createConnection({
+  var connection = createConnection({
     port     : server.port(),
     user     : 'user_1',
     password : 'pass_1'
   });
 
   connection.query('SELECT CURRENT_USER()', function (err, result) {
-    assert.ifError(err);
-    assert.strictEqual(result[0]['CURRENT_USER()'], 'user_1@localhost');
+    ifError(err);
+    strictEqual(result[0]['CURRENT_USER()'], 'user_1@localhost');
 
     connection.changeUser({user: 'user_2', password: 'pass_2'}, function (err) {
-      assert.ifError(err);
+      ifError(err);
       connection.destroy();
       server.destroy();
     });
@@ -28,10 +28,10 @@ server.listen(0, function(err) {
 
 server.on('connection', function (incomingConnection) {
   random(20, function (err, scramble) {
-    assert.ifError(err);
+    ifError(err);
 
     incomingConnection.on('authSwitchResponse', function (packet) {
-      this._sendAuthResponse(packet.data, common.Auth.token('pass_2', scramble));
+      this._sendAuthResponse(packet.data, Auth.token('pass_2', scramble));
     });
 
     incomingConnection.on('changeUser', function () {

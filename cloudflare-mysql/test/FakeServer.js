@@ -1,23 +1,23 @@
 // An experimental fake MySQL server for tricky integration tests. Expanded
 // as needed.
 
-var Buffer          = require('safe-buffer').Buffer;
-var common          = require('./common');
-var Charsets        = common.Charsets;
-var ClientConstants = common.ClientConstants;
-var Crypto          = require('crypto');
-var Net             = require('net');
-var tls             = require('tls');
-var Packets         = common.Packets;
-var PacketWriter    = common.PacketWriter;
-var Parser          = common.Parser;
-var Types           = common.Types;
-var Errors          = common.Errors;
-var EventEmitter    = require('events').EventEmitter;
-var Util            = require('util');
+import { Buffer } from 'safe-buffer';
+import { Charsets as _Charsets, ClientConstants as _ClientConstants, Packets as _Packets, PacketWriter as _PacketWriter, Parser as _Parser, Types as _Types, Errors as _Errors, extend, getSSLConfig } from './common';
+var Charsets        = _Charsets;
+var ClientConstants = _ClientConstants;
+import { createCredentials } from 'node:crypto';
+import { createServer } from 'net';
+import { TLSSocket, createSecureContext, createSecurePair } from 'tls';
+var Packets         = _Packets;
+var PacketWriter    = _PacketWriter;
+var Parser          = _Parser;
+var Types           = _Types;
+var Errors          = _Errors;
+import { EventEmitter } from 'events';
+import { inherits } from 'util';
 
-module.exports = FakeServer;
-Util.inherits(FakeServer, EventEmitter);
+export default FakeServer;
+inherits(FakeServer, EventEmitter);
 function FakeServer(options) {
   EventEmitter.call(this);
 
@@ -27,7 +27,7 @@ function FakeServer(options) {
 }
 
 FakeServer.prototype.listen = function(port, cb) {
-  this._server = Net.createServer(this._handleConnection.bind(this));
+  this._server = createServer(this._handleConnection.bind(this));
   this._server.listen(port, cb);
 };
 
@@ -57,7 +57,7 @@ FakeServer.prototype.destroy = function() {
   });
 };
 
-Util.inherits(FakeConnection, EventEmitter);
+inherits(FakeConnection, EventEmitter);
 function FakeConnection(server, socket) {
   EventEmitter.call(this);
 
@@ -98,7 +98,7 @@ FakeConnection.prototype.error = function deny(message, errno) {
 FakeConnection.prototype.handshake = function(options) {
   this._handshakeOptions = options || {};
 
-  var packetOptions = common.extend({
+  var packetOptions = extend({
     scrambleBuff1       : Buffer.from('1020304050607080', 'hex'),
     scrambleBuff2       : Buffer.from('0102030405060708090A0B0C', 'hex'),
     serverCapabilities1 : 512, // only 1 flag, PROTOCOL_41
@@ -433,7 +433,7 @@ FakeConnection.prototype._writePacketStream = function _writePacketStream(count)
   }
 };
 
-if (tls.TLSSocket) {
+if (TLSSocket) {
   // 0.11+ environment
   FakeConnection.prototype._startTLS = function _startTLS() {
     // halt parser
@@ -441,8 +441,8 @@ if (tls.TLSSocket) {
     this._socket.removeAllListeners('data');
 
     // socket <-> encrypted
-    var secureContext = tls.createSecureContext(common.getSSLConfig(this._server._options.ssl));
-    var secureSocket  = new tls.TLSSocket(this._socket, {
+    var secureContext = createSecureContext(getSSLConfig(this._server._options.ssl));
+    var secureSocket  = new TLSSocket(this._socket, {
       secureContext : secureContext,
       isServer      : true
     });
@@ -473,8 +473,8 @@ if (tls.TLSSocket) {
     this._socket.removeAllListeners('data');
 
     // inject secure pair
-    var credentials = Crypto.createCredentials(common.getSSLConfig());
-    var securePair = tls.createSecurePair(credentials, true);
+    var credentials = createCredentials(getSSLConfig());
+    var securePair = createSecurePair(credentials, true);
     this._socket.pipe(securePair.encrypted);
     this._stream = securePair.cleartext;
     securePair.cleartext.on('data', this._handleData.bind(this));

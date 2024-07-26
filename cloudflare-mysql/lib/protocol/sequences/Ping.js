@@ -1,9 +1,9 @@
-var Sequence = require('./Sequence');
-var Util     = require('util');
-var Packets  = require('../packets');
+import Sequence, { call } from './Sequence';
+import { inherits } from 'node:util';
+import { ComPingPacket } from '../packets';
 
-module.exports = Ping;
-Util.inherits(Ping, Sequence);
+export default Ping;
+inherits(Ping, Sequence);
 
 function Ping(options, callback) {
   if (!callback && typeof options === 'function') {
@@ -11,9 +11,9 @@ function Ping(options, callback) {
     options = {};
   }
 
-  Sequence.call(this, options, callback);
+  call(this, options, callback);
 }
 
 Ping.prototype.start = function() {
-  this.emit('packet', new Packets.ComPingPacket());
+  this.emit('packet', new ComPingPacket());
 };

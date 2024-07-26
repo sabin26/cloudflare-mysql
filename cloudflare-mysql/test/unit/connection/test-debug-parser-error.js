@@ -1,27 +1,27 @@
-var assert = require('assert');
-var common = require('../../common');
-var util   = require('util');
+import { ifError, ok, equal, deepEqual } from 'assert';
+import { createFakeServer, createConnection, Packets, PacketWriter } from '../../common';
+import { format } from 'node:util';
 
 var tid    = 0;
-var server = common.createFakeServer();
+var server = createFakeServer();
 
 server.listen(0, function (err) {
-  assert.ifError(err);
+  ifError(err);
 
-  var connection = common.createConnection({debug: true, port: server.port()});
+  var connection = createConnection({debug: true, port: server.port()});
   var messages   = [];
 
   console.log = function () {
-    var msg = util.format.apply(this, arguments);
+    var msg = format.apply(this, arguments);
     if (String(msg).indexOf('--') !== -1) {
       messages.push(msg.split(' {')[0]);
     }
   };
 
   connection.query('SELECT value FROM stuff', function (err) {
-    assert.ok(err, 'got error');
-    assert.equal(messages.length, 6);
-    assert.deepEqual(messages, [
+    ok(err, 'got error');
+    equal(messages.length, 6);
+    deepEqual(messages, [
       '<-- HandshakeInitializationPacket',
       '--> (1) ClientAuthenticationPacket',
       '<-- (1) OkPacket',
@@ -40,11 +40,11 @@ server.on('connection', function(conn) {
   conn.on('query', function(packet) {
     switch (packet.sql) {
       case 'SELECT value FROM stuff':
-        this._sendPacket(new common.Packets.ResultSetHeaderPacket({
+        this._sendPacket(new Packets.ResultSetHeaderPacket({
           fieldCount: 1
         }));
 
-        var writer = new common.PacketWriter();
+        var writer = new PacketWriter();
         writer.writeLengthCodedString('def');
         this._socket.write(writer.toBuffer(this._parser));
         this._parser.resetPacketNumber();

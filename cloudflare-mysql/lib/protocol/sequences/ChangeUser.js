@@ -1,12 +1,12 @@
-var Sequence = require('./Sequence');
-var Util     = require('util');
-var Packets  = require('../packets');
-var Auth     = require('../Auth');
+import Sequence, { call } from './Sequence';
+import { inherits } from 'node:util';
+import { AuthSwitchRequestPacket, ErrorPacket, ComChangeUserPacket, AuthSwitchResponsePacket } from '../packets';
+import { token, auth } from '../Auth';
 
-module.exports = ChangeUser;
-Util.inherits(ChangeUser, Sequence);
+export default ChangeUser;
+inherits(ChangeUser, Sequence);
 function ChangeUser(options, callback) {
-  Sequence.call(this, options, callback);
+  call(this, options, callback);
 
   this._user          = options.user;
   this._password      = options.password;
@@ -17,8 +17,8 @@ function ChangeUser(options, callback) {
 
 ChangeUser.prototype.determinePacket = function determinePacket(firstByte) {
   switch (firstByte) {
-    case 0xfe: return Packets.AuthSwitchRequestPacket;
-    case 0xff: return Packets.ErrorPacket;
+    case 0xfe: return AuthSwitchRequestPacket;
+    case 0xff: return ErrorPacket;
     default: return undefined;
   }
 };
@@ -26,8 +26,8 @@ ChangeUser.prototype.determinePacket = function determinePacket(firstByte) {
 ChangeUser.prototype.start = function(handshakeInitializationPacket) {
   var scrambleBuff = handshakeInitializationPacket.scrambleBuff();
 
-  Auth.token(this._password, scrambleBuff).then((scrambleBuff) => {
-    var packet = new Packets.ComChangeUserPacket({
+  token(this._password, scrambleBuff).then((scrambleBuff) => {
+    var packet = new ComChangeUserPacket({
       user          : this._user,
       scrambleBuff  : scrambleBuff,
       database      : this._database,
@@ -46,11 +46,11 @@ ChangeUser.prototype.start = function(handshakeInitializationPacket) {
 ChangeUser.prototype['AuthSwitchRequestPacket'] = function (packet) {
   var name = packet.authMethodName;
   
-  Auth.auth(name, packet.authMethodData, {
+  auth(name, packet.authMethodData, {
     password: this._password
   }).then((data) => {
     if (data !== undefined) {
-      this.emit('packet', new Packets.AuthSwitchResponsePacket({
+      this.emit('packet', new AuthSwitchResponsePacket({
         data: data
       }));
     } else {

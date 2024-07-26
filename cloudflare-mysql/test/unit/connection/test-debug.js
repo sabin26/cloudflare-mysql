@@ -1,27 +1,27 @@
-var assert = require('assert');
-var common = require('../../common');
-var util   = require('util');
+import { ifError, equal, deepEqual } from 'assert';
+import { createFakeServer, createConnection } from '../../common';
+import { format } from 'node:util';
 
 var tid    = 0;
-var server = common.createFakeServer();
+var server = createFakeServer();
 
 server.listen(0, function (err) {
-  assert.ifError(err);
+  ifError(err);
 
-  var connection = common.createConnection({debug: true, port: server.port()});
+  var connection = createConnection({debug: true, port: server.port()});
   var messages   = [];
 
   console.log = function () {
-    var msg = util.format.apply(this, arguments);
+    var msg = format.apply(this, arguments);
     if (String(msg).indexOf('--') !== -1) {
       messages.push(msg.split(' {')[0]);
     }
   };
 
   connection.ping(function (err) {
-    assert.ifError(err);
-    assert.equal(messages.length, 5);
-    assert.deepEqual(messages, [
+    ifError(err);
+    equal(messages.length, 5);
+    deepEqual(messages, [
       '<-- HandshakeInitializationPacket',
       '--> (1) ClientAuthenticationPacket',
       '<-- (1) OkPacket',

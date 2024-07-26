@@ -1,9 +1,9 @@
 #!/usr/bin/env node
-var fs   = require('fs');
-var path = require('path');
+import { readFileSync, writeFileSync } from 'node:fs';
+import { join } from 'path';
 
-var changesFilePath     = path.join(__dirname, '..', 'Changes.md');
-var changesFileContents = fs.readFileSync(changesFilePath, 'utf-8');
+var changesFilePath     = join(__dirname, '..', 'Changes.md');
+var changesFileContents = readFileSync(changesFilePath, 'utf-8');
 var changesHeadRegexp   = /^## HEAD$/m;
 var date                = getLocaleDate();
 var version             = process.env.npm_package_version;
@@ -13,7 +13,7 @@ if (!changesHeadRegexp.test(changesFileContents)) {
   process.exit(1);
 }
 
-fs.writeFileSync(changesFilePath,
+writeFileSync(changesFilePath,
   changesFileContents.replace(changesHeadRegexp, '## v' + version + ' (' + date + ')'));
 
 function getLocaleDate() {

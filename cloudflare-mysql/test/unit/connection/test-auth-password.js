@@ -1,21 +1,21 @@
-var common = require('../../common');
-var assert = require('assert');
-var Auth   = require(common.lib + '/protocol/Auth');
-var Crypto = require('crypto');
+import { lib, createFakeServer, createConnection } from '../../common';
+import { ifError } from 'assert';
+var Auth   = require(lib + '/protocol/Auth');
+
 
 var random = Crypto.pseudoRandomBytes || Crypto.randomBytes; // Depends on node.js version
-var server = common.createFakeServer();
+var server = createFakeServer();
 
 server.listen(0, function(err) {
-  assert.ifError(err);
+  ifError(err);
 
-  var connection = common.createConnection({
+  var connection = createConnection({
     port     : server.port(),
     password : 'passwd'
   });
 
   connection.connect(function (err) {
-    assert.ifError(err);
+    ifError(err);
     connection.destroy();
     server.destroy();
   });
@@ -23,7 +23,7 @@ server.listen(0, function(err) {
 
 server.on('connection', function(incomingConnection) {
   random(20, function (err, scramble) {
-    assert.ifError(err);
+    ifError(err);
 
     incomingConnection.on('clientAuthentication', function (packet) {
       this._sendAuthResponse(packet.scrambleBuff, Auth.token('passwd', scramble));

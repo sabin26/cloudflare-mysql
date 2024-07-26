@@ -1,8 +1,8 @@
-var Util           = require('util');
-var EventEmitter   = require('events').EventEmitter;
-var Packets        = require('../packets');
-var ErrorConstants = require('../constants/errors');
-var Timer          = require('../Timer');
+import { inherits } from 'node:util';
+import { EventEmitter } from 'events';
+import { OkPacket, EofPacket, ErrorPacket } from '../packets';
+import ErrorConstants from '../constants/errors';
+import Timer from '../Timer';
 
 // istanbul ignore next: Node.js < 0.10 not covered
 var listenerCount = EventEmitter.listenerCount
@@ -10,8 +10,8 @@ var listenerCount = EventEmitter.listenerCount
 
 var LONG_STACK_DELIMITER = '\n    --------------------\n';
 
-module.exports = Sequence;
-Util.inherits(Sequence, EventEmitter);
+export default Sequence;
+inherits(Sequence, EventEmitter);
 function Sequence(options, callback) {
   if (typeof options === 'function') {
     callback = options;
@@ -31,9 +31,9 @@ function Sequence(options, callback) {
 
 Sequence.determinePacket = function(byte) {
   switch (byte) {
-    case 0x00: return Packets.OkPacket;
-    case 0xfe: return Packets.EofPacket;
-    case 0xff: return Packets.ErrorPacket;
+    case 0x00: return OkPacket;
+    case 0xfe: return EofPacket;
+    case 0xff: return ErrorPacket;
     default:   return undefined;
   }
 };

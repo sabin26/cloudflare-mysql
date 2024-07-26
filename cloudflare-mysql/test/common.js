@@ -1,46 +1,42 @@
-var common = exports;
-var fs     = require('fs');
-var path   = require('path');
 
-common.lib      = path.resolve(__dirname, '..', 'lib');
-common.fixtures = path.resolve(__dirname, 'fixtures');
+import { readFileSync, writeSync, fsyncSync } from 'node:fs';
+import { resolve, join } from 'path';
 
-// Useful for triggering ECONNREFUSED errors on connect()
-common.bogusPort     = 47378;
-// Useful for triggering ER_ACCESS_DENIED_ERROR errors on connect()
-common.bogusPassword = 'INVALID PASSWORD';
+export const lib      = resolve(__dirname, '..', 'lib');
+export const fixtures = resolve(__dirname, 'fixtures');
 
-// Used for simulating a fake mysql server
-common.fakeServerSocket = __dirname + '/fake_server.sock';
+export const bogusPort     = 47378;
+export const bogusPassword = 'INVALID PASSWORD';
 
-common.testDatabase = process.env.MYSQL_DATABASE || 'test';
+export const fakeServerSocket = __dirname + '/fake_server.sock';
 
-// Export common modules
-common.Auth             = require(common.lib + '/protocol/Auth');
-common.Charsets         = require(common.lib + '/protocol/constants/charsets');
-common.ClientConstants  = require(common.lib + '/protocol/constants/client');
-common.Connection       = require(common.lib + '/Connection');
-common.ConnectionConfig = require(common.lib + '/ConnectionConfig');
-common.Errors           = require(common.lib + '/protocol/constants/errors');
-common.Packets          = require(common.lib + '/protocol/packets');
-common.PacketWriter     = require(common.lib + '/protocol/PacketWriter');
-common.Parser           = require(common.lib + '/protocol/Parser');
-common.PoolConfig       = require(common.lib + '/PoolConfig');
-common.PoolConnection   = require(common.lib + '/PoolConnection');
-common.SqlString        = require(common.lib + '/protocol/SqlString');
-common.Types            = require(common.lib + '/protocol/constants/types');
+export const testDatabase = process.env.MYSQL_DATABASE || 'test';
 
-var Mysql      = require(path.resolve(common.lib, '../index'));
-var FakeServer = require('./FakeServer');
+export const Auth             = require(lib + '/protocol/Auth');
+export const Charsets         = require(lib + '/protocol/constants/charsets');
+export const ClientConstants  = require(lib + '/protocol/constants/client');
+export const Connection       = require(lib + '/Connection');
+export const ConnectionConfig = require(lib + '/ConnectionConfig');
+export const Errors           = require(lib + '/protocol/constants/errors');
+export const Packets          = require(lib + '/protocol/packets');
+export const PacketWriter     = require(lib + '/protocol/PacketWriter');
+export const Parser           = require(lib + '/protocol/Parser');
+export const PoolConfig       = require(lib + '/PoolConfig');
+export const PoolConnection   = require(lib + '/PoolConnection');
+export const SqlString        = require(lib + '/protocol/SqlString');
+export const Types            = require(lib + '/protocol/constants/types');
 
-common.createConnection = function(config) {
-  return Mysql.createConnection(common.getTestConfig(config));
-};
+var Mysql      = require(resolve(lib, '../index'));
+import FakeServer from './FakeServer';
 
-common.createQuery = Mysql.createQuery;
+export function createConnection(config) {
+  return Mysql.createConnection(getTestConfig(config));
+}
 
-common.createTestDatabase = function createTestDatabase(connection, callback) {
-  var database = common.testDatabase;
+export const createQuery = Mysql.createQuery;
+
+export function createTestDatabase(connection, callback) {
+  var database = testDatabase;
 
   connection.query('CREATE DATABASE ??', [database], function (err) {
     if (err && err.code !== 'ER_DB_CREATE_EXISTS') {
@@ -50,31 +46,31 @@ common.createTestDatabase = function createTestDatabase(connection, callback) {
 
     callback(null, database);
   });
-};
+}
 
-common.createPool = function(config) {
-  return Mysql.createPool(common.extend({}, config, {
-    connectionConfig: common.getTestConfig(config.connectionConfig)
+export function createPool(config) {
+  return Mysql.createPool(extend({}, config, {
+    connectionConfig: getTestConfig(config.connectionConfig)
   }));
-};
+}
 
-common.createPoolCluster = function(config) {
+export function createPoolCluster(config) {
   return Mysql.createPoolCluster(config);
-};
+}
 
-common.createFakeServer = function(options) {
-  return new FakeServer(common.extend({}, options));
-};
+export function createFakeServer(options) {
+  return new FakeServer(extend({}, options));
+}
 
-common.detectNewline = function detectNewline(path) {
-  var newlines = fs.readFileSync(path, 'utf8').match(/(?:\r?\n)/g) || [];
+export function detectNewline(path) {
+  var newlines = readFileSync(path, 'utf8').match(/(?:\r?\n)/g) || [];
   var crlf = newlines.filter(function (nl) { return nl === '\r\n'; }).length;
   var lf = newlines.length - crlf;
 
   return crlf > lf ? '\r\n' : '\n';
-};
+}
 
-common.extend = function extend(dest) {
+export function extend(dest) {
   for (var i = 1; i < arguments.length; i++) {
     var src = arguments[i];
     for (var key in src) {
@@ -83,15 +79,15 @@ common.extend = function extend(dest) {
   }
 
   return dest;
-};
+}
 
-common.getTestConnection = function getTestConnection(config, callback) {
+export function getTestConnection(config, callback) {
   if (!callback && typeof config === 'function') {
     callback = config;
     config = {};
   }
 
-  var connection = common.createConnection(config);
+  var connection = createConnection(config);
 
   connection.connect(function (err) {
     if (err && err.code === 'ECONNREFUSED') {
@@ -99,7 +95,7 @@ common.getTestConnection = function getTestConnection(config, callback) {
         throw err;
       }
 
-      common.skipTest('cannot connect to MySQL server');
+      skipTest('cannot connect to MySQL server');
     }
 
     if (err) {
@@ -109,43 +105,43 @@ common.getTestConnection = function getTestConnection(config, callback) {
 
     callback(null, connection);
   });
-};
+}
 
-common.skipTest = function skipTest(message) {
+export function skipTest(message) {
   var msg = 'skipping - ' + message + '\n';
 
   try {
-    fs.writeSync(process.stdout.fd, msg);
-    fs.fsyncSync(process.stdout.fd);
+    writeSync(process.stdout.fd, msg);
+    fsyncSync(process.stdout.fd);
   } catch (e) {
     // Ignore error
   }
 
   process.exit(0);
-};
+}
 
-common.useTestDb = function(connection) {
-  common.createTestDatabase(connection, function (err) {
+export function useTestDb(connection) {
+  createTestDatabase(connection, function (err) {
     if (err) throw err;
   });
 
-  connection.query('USE ' + common.testDatabase);
-};
+  connection.query('USE ' + testDatabase);
+}
 
-common.getTestConfig = function(config) {
-  return common.extend({
+export function getTestConfig(config) {
+  return extend({
     host       : process.env.MYSQL_HOST,
     port       : process.env.MYSQL_PORT,
     user       : process.env.MYSQL_USER,
     password   : process.env.MYSQL_PASSWORD,
     socketPath : process.env.MYSQL_SOCKET
   }, config);
-};
+}
 
-common.getSSLConfig = function getSSLConfig(config) {
-  return common.extend({
-    ca   : fs.readFileSync(path.join(common.fixtures, 'server.crt'), 'ascii'),
-    cert : fs.readFileSync(path.join(common.fixtures, 'server.crt'), 'ascii'),
-    key  : fs.readFileSync(path.join(common.fixtures, 'server.key'), 'ascii')
+export function getSSLConfig(config) {
+  return extend({
+    ca   : readFileSync(join(fixtures, 'server.crt'), 'ascii'),
+    cert : readFileSync(join(fixtures, 'server.crt'), 'ascii'),
+    key  : readFileSync(join(fixtures, 'server.key'), 'ascii')
   }, config);
-};
+}

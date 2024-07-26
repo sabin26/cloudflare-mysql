@@ -1,1 +1,1 @@
-module.exports = require('sqlstring');
+export * from "sqlstring";

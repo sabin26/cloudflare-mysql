@@ -1,11 +1,11 @@
-var fs   = require('fs');
-var path = require('path');
-var util = require('util');
+import { readFileSync } from 'node:fs';
+import { join } from 'path';
+import { format } from 'node:util';
 
 var MARKDOWN_SECTION_REGEXP = /^(#+) (.+)$/;
 var NEWLINE_REGEXP          = /\r?\n/;
-var README_PATH             = path.join(__dirname, '..', 'Readme.md');
-var README_CONTENTS         = fs.readFileSync(README_PATH, 'utf-8');
+var README_PATH             = join(__dirname, '..', 'Readme.md');
+var README_CONTENTS         = readFileSync(README_PATH, 'utf-8');
 var TOC_SECTION_NAME        = 'Table of Contents';
 
 var currentSectionLevel = null;
@@ -26,7 +26,7 @@ README_CONTENTS.split(NEWLINE_REGEXP).forEach(function (line, index) {
     }
 
     if (currentSectionLevel > 1 && currentSectionName !== TOC_SECTION_NAME) {
-      expectedToc.push(util.format('%s- [%s](%s)',
+      expectedToc.push(format('%s- [%s](%s)',
         repeat('  ', (currentSectionLevel - 2)), currentSectionName, toAnchor(currentSectionName)));
     }
   } else if (currentSectionName === TOC_SECTION_NAME) {

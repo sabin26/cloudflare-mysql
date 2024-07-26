@@ -1,21 +1,21 @@
-var assert = require('assert');
-var common = require('../../common');
-var Crypto = require('crypto');
+import { ifError, equal } from 'assert';
+import { createFakeServer, createConnection, Auth } from '../../common';
+
 
 var random = Crypto.pseudoRandomBytes || Crypto.randomBytes; // Depends on node.js version
-var server = common.createFakeServer();
+var server = createFakeServer();
 
 var connected;
 server.listen(0, function (err) {
-  assert.ifError(err);
+  ifError(err);
 
-  var connection = common.createConnection({
+  var connection = createConnection({
     port     : server.port(),
     password : 'authswitch'
   });
 
   connection.connect(function (err, result) {
-    assert.ifError(err);
+    ifError(err);
 
     connected = result;
 
@@ -26,10 +26,10 @@ server.listen(0, function (err) {
 
 server.on('connection', function(incomingConnection) {
   random(20, function (err, scramble) {
-    assert.ifError(err);
+    ifError(err);
 
     incomingConnection.on('authSwitchResponse', function (packet) {
-      this._sendAuthResponse(packet.data, common.Auth.token('authswitch', scramble));
+      this._sendAuthResponse(packet.data, Auth.token('authswitch', scramble));
     });
 
     incomingConnection.on('clientAuthentication', function () {
@@ -44,5 +44,5 @@ server.on('connection', function(incomingConnection) {
 });
 
 process.on('exit', function() {
-  assert.equal(connected.fieldCount, 0);
+  equal(connected.fieldCount, 0);
 });

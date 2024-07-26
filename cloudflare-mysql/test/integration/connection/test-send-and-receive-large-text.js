@@ -1,9 +1,9 @@
-var assert = require('assert');
-var common = require('../../common');
-var crypto = require('crypto');
+import { ifError, equal } from 'assert';
+import { getTestConnection, createConnection, useTestDb, skipTest } from '../../common';
 
-common.getTestConnection(function (err, connection) {
-  assert.ifError(err);
+
+getTestConnection(function (err, connection) {
+  ifError(err);
 
   getMaxAllowedPacket(connection);
 });
@@ -11,7 +11,7 @@ common.getTestConnection(function (err, connection) {
 var oldMaxAllowedPacket;
 function getMaxAllowedPacket(connection) {
   connection.query('SHOW VARIABLES WHERE Variable_name = ?', ['max_allowed_packet'], function (err, rows) {
-    assert.ifError(err);
+    ifError(err);
 
     oldMaxAllowedPacket = Number(rows[0].Value);
 
@@ -29,17 +29,17 @@ function increaseMaxAllowedPacketIfNeeded(connection) {
     : oldMaxAllowedPacket;
 
   connection.query('SET GLOBAL max_allowed_packet = ?', [newMaxAllowedPacket], function (err) {
-    assert.ifError(err);
+    ifError(err);
 
     // We need to re-connect for this change to take effect, bah
     connection.end();
-    connection = common.createConnection();
+    connection = createConnection();
 
     // We need to wait for the re-connect to happen before starting the actual
     // test. That's because our buffer to hex shim in 0.4.x takes ~12 sec on
     // CI, causing a MySQL connection timeout otherwise.
     connection.connect(function (err) {
-      assert.ifError(err);
+      ifError(err);
 
       triggerLargeQueryAndResponsePackets(connection);
     });
@@ -52,10 +52,10 @@ var table  = 'large_text_test';
 
 function triggerLargeQueryAndResponsePackets(connection) {
   random(length, function (err, buf) {
-    assert.ifError(err);
-    assert.equal(buf.length, length);
+    ifError(err);
+    equal(buf.length, length);
 
-    common.useTestDb(connection);
+    useTestDb(connection);
 
     connection.query([
       'CREATE TEMPORARY TABLE ?? (',
@@ -63,27 +63,27 @@ function triggerLargeQueryAndResponsePackets(connection) {
       '`bt` longtext NOT NULL,',
       'PRIMARY KEY (`id`)',
       ') ENGINE=InnoDB DEFAULT CHARSET=utf8'
-    ].join('\n'), [table], assert.ifError);
+    ].join('\n'), [table], ifError);
 
     var text = buf.toString('hex');
 
     connection.query('INSERT INTO ?? SET ?', [table, {bt: text}], function (err) {
       if (err && err.code === 'ER_TOO_BIG_ROWSIZE') {
-        common.skipTest('storage engine unable to store ' + text.length + ' byte text value');
+        skipTest('storage engine unable to store ' + text.length + ' byte text value');
       }
 
-      assert.ifError(err);
+      ifError(err);
     });
 
     connection.query('SELECT `id`, `bt` FROM ??', [table], function (err, rows) {
-      assert.ifError(err);
+      ifError(err);
 
-      connection.query('SET GLOBAL max_allowed_packet = ?', [oldMaxAllowedPacket], assert.ifError);
+      connection.query('SET GLOBAL max_allowed_packet = ?', [oldMaxAllowedPacket], ifError);
       connection.end(function (err) {
-        assert.ifError(err);
-        assert.equal(rows.length, 1);
-        assert.equal(rows[0].bt.length, text.length);
-        assert.equal(rows[0].bt, text);
+        ifError(err);
+        equal(rows.length, 1);
+        equal(rows[0].bt.length, text.length);
+        equal(rows[0].bt, text);
       });
     });
   });
